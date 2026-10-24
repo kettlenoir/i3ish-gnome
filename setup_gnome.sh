@@ -2,15 +2,24 @@
 set -euo pipefail
 
 # ==============================================================================
-# Fedora Setup GNOME Settings, Keybindings & Screen Rotation Script
+# Fedora GNOME 画面制御・ショートカット・画面回転 設定スクリプト
 # ==============================================================================
 
 echo "================================================================================"
-echo " [2/2] Configuring GNOME Desktop Settings, Shortcuts & Screen Rotation"
+echo " GNOME 画面制御・ショートカット・画面回転の設定を開始します"
 echo "================================================================================"
 
 # ------------------------------------------------------------------------------
-# 1. モニター名 & スケールの自動検出 / 確認
+# 1. 画面回転ツール (gnome-monitor-config) の確認・自動インストール
+#    ※ このスクリプトでインストールするパッケージはこれ1つのみです
+# ------------------------------------------------------------------------------
+if ! command -v gnome-monitor-config >/dev/null 2>&1; then
+    echo ">>> 画面回転ツール (gnome-monitor-config) をインストール中..."
+    sudo dnf install -y gnome-monitor-config
+fi
+
+# ------------------------------------------------------------------------------
+# 2. モニター名 & スケールの自動検出 / 対話確認
 # ------------------------------------------------------------------------------
 DETECTED_MONITOR=""
 DETECTED_SCALE=""
@@ -46,7 +55,7 @@ if [ -t 0 ]; then
 fi
 
 # ------------------------------------------------------------------------------
-# 2. ウィンドウ操作・全画面・スクリーンショット
+# 3. ウィンドウ操作・全画面・スクリーンショット
 # ------------------------------------------------------------------------------
 echo ">>> ウィンドウ操作・全画面・キャプチャショートカットを設定中..."
 gsettings set org.gnome.desktop.wm.keybindings close "['<Super>q']"
@@ -56,7 +65,7 @@ gsettings set org.gnome.desktop.wm.keybindings cycle-windows "['<Alt>Escape', '<
 gsettings set org.gnome.shell.keybindings show-screenshot-ui "['<Super><Shift>s']"
 
 # ------------------------------------------------------------------------------
-# 3. ワークスペース固定化（10画面固定）
+# 4. ワークスペース固定化（10画面固定）
 # ------------------------------------------------------------------------------
 echo ">>> 10画面固定ワークスペースを設定中..."
 gsettings set org.gnome.mutter dynamic-workspaces false
@@ -67,7 +76,7 @@ for i in $(seq 1 9); do
     gsettings set org.gnome.shell.keybindings "switch-to-application-$i" "[]"
 done
 
-# ワークスペース直接切り替え (Super + 1〜9, 0)
+# ワークスペース直接切り替え & ウィンドウ移動 (Super + 1〜9, 0)
 for i in $(seq 1 9); do
     gsettings set org.gnome.desktop.wm.keybindings "switch-to-workspace-$i" "['<Super>$i']"
     gsettings set org.gnome.desktop.wm.keybindings "move-to-workspace-$i" "['<Super><Shift>$i']"
@@ -76,14 +85,14 @@ gsettings set org.gnome.desktop.wm.keybindings switch-to-workspace-10 "['<Super>
 gsettings set org.gnome.desktop.wm.keybindings move-to-workspace-10 "['<Super><Shift>0']"
 
 # ------------------------------------------------------------------------------
-# 4. 外観設定 & 入力切替競合解除
+# 5. 外観設定 & 入力切替競合解除
 # ------------------------------------------------------------------------------
 gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
 gsettings set org.gnome.desktop.wm.keybindings switch-input-source "[]"
 gsettings set org.gnome.desktop.wm.keybindings switch-input-source-backward "[]"
 
 # ------------------------------------------------------------------------------
-# 5. カスタムショートカット登録 (WezTerm起動, 縦回転, 横復帰)
+# 6. カスタムショートカット登録 (WezTerm起動, 画面回転)
 # ------------------------------------------------------------------------------
 echo ">>> カスタムショートカット（WezTerm起動 / 画面回転）を登録中..."
 gsettings set org.gnome.settings-daemon.plugins.media-keys custom-keybindings \
